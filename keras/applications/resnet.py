@@ -222,9 +222,9 @@ def ResNet(
 
     return model
 
-
+#x=StochasticDropout(drop_prob)(x)
 def residual_block_v1(
-    x, filters, kernel_size=3, stride=1, conv_shortcut=True, name=None
+    x, filters, kernel_size=3, stride=1, conv_shortcut=True, name=None, drop_prob
 ):
     """A residual block for ResNet*_v1.
 
@@ -275,6 +275,7 @@ def residual_block_v1(
         axis=bn_axis, epsilon=1.001e-5, name=name + "_3_bn"
     )(x)
 
+    x = StochasticDropout(drop_prob)(x)
     x = layers.Add(name=name + "_add")([shortcut, x])
     x = layers.Activation("relu", name=name + "_out")(x)
     return x
@@ -406,13 +407,14 @@ def ResNet50(
 ):
     """Instantiates the ResNet50 architecture."""
 
-def stack_fn(x, drop_prob):
+def stack_fn(x):
+    #add drop_prob to parameters
         x = stack_residual_blocks_v1(x, 64, 3, stride1=1, name="conv2")
-        x=StochasticDropout(drop_prob)(x)
+        #x=StochasticDropout(drop_prob)(x)
         x = stack_residual_blocks_v1(x, 128, 4, name="conv3")
-        x=StochasticDropout(drop_prob)(x)
+        #x=StochasticDropout(drop_prob)(x)
         x = stack_residual_blocks_v1(x, 256, 6, name="conv4")
-        x=StochasticDropout(drop_prob)(x)
+        #x=StochasticDropout(drop_prob)(x)
         return stack_residual_blocks_v1(x, 512, 3, name="conv5")
 
     return ResNet(
