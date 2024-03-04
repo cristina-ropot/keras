@@ -6,6 +6,15 @@ from keras.models import Functional
 from keras.ops import operation_utils
 from keras.utils import file_utils
 
+!pip install  git+https://github.com/mvaldenegro/keras-uncertainty.git
+
+import keras_uncertainty as ku
+from keras_uncertainty.layers import DropConnectDense, FlipoutDense, rbf_layers, RBFClassifier
+import keras_uncertainty.backend as K
+from keras_uncertainty.utils import numpy_entropy
+from keras_uncertainty.models import stochastic_model, StochasticClassifier, DeepEnsembleClassifier
+
+
 BASE_WEIGHTS_PATH = (
     "https://storage.googleapis.com/tensorflow/keras-applications/resnet/"
 )
@@ -397,10 +406,13 @@ def ResNet50(
 ):
     """Instantiates the ResNet50 architecture."""
 
-    def stack_fn(x):
+def stack_fn(x, drop_prob):
         x = stack_residual_blocks_v1(x, 64, 3, stride1=1, name="conv2")
+        x=StochasticDropout(drop_prob)(x)
         x = stack_residual_blocks_v1(x, 128, 4, name="conv3")
+        x=StochasticDropout(drop_prob)(x)
         x = stack_residual_blocks_v1(x, 256, 6, name="conv4")
+        x=StochasticDropout(drop_prob)(x)
         return stack_residual_blocks_v1(x, 512, 3, name="conv5")
 
     return ResNet(
